@@ -12,7 +12,9 @@ Sample App for Xero CFML SDK - connect to Xero Accounting API with CFML applicat
 ## Getting Started
 ### Install sample app with [CommandBox]( https://www.ortussolutions.com/products/commandbox)
 
+```javascript
   box install xero-cfml-sample-app
+```
 
 Alternatively, you can clone or download this repo into your wwwroot folder
 
@@ -124,7 +126,7 @@ Reading all objects from an endpoint
 
   // Get all items 
   account.getAll();
-	// After you getAll - you can loop over an Array of items (NOTE: Your object is not populated with the getAll method)
+  // After you getAll - you can loop over an Array of items (NOTE: Your object is not populated with the getAll method)
   account.getList();
 
   //After you getAll - Populate your object with the first item in the Array
@@ -141,8 +143,6 @@ Reading all objects from an endpoint
   ifModifiedSince = DateConvert("local2utc", dateTime24hoursAgo);
   account.getAll(ifModifiedSince=ifModifiedSince);
 
- //Get an item by a specific ID (No need to getAll with this method)
-  account.getById("XXXXXXXXXXXXXXXXX");
 </cfscript>		
 ```
 
