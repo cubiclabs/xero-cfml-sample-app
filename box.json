@@ -10,7 +10,7 @@
         "URL":""
     },
     "bugs":"",
-    "slug":"xero-cfml",
+    "slug":"xero-cfml-sample-app",
     "shortDescription":"Sample app to demo the Xero CFML SDK",
     "description":"This example app allows you to hit each endpoint with a specific action CRUD, etc",
     "instructions":"",
