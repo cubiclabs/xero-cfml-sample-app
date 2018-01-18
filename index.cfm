@@ -1,23 +1,19 @@
 <html>
 <head>
-	<title>Xero-CFML SDK</title>
+	<title>Xero-CFML Sample App</title>
 	<cfinclude template="/common/header.cfm" >
 </head>
 <body>
 <div class="container">
-	<cfoutput>
-		<h1>Xero-CFML SDK</h1>
-		<h3>Welcome</h3>
-		<p>
-		Your sample app is currently configured as Xero <strong>#application.config["AppType"]#</strong> Application. 
-		</p>
-		<p>
-			To set modify your configuration ... go to /resources/config.json
-		</p>
-		<p>
-			<a href="example/">Explore Sample Application</a></li>
-		</p>
-	</cfoutput>
+	<h1>Xero-CFML Sample App</h1>
+	<cfif StructKeyExists(url,'error') GT 0>
+		<cfoutput>
+			<div class="alert alert-warning">#url.error#<br></div>
+		</cfoutput>
+	</cfif>
+	Let's start by connecting to your Xero org.
+	<br><br>
+	<a class="btn btn-primary" href="request_token.cfm">Connect to Xero</a>
 </div>
 </body>
 </html>
