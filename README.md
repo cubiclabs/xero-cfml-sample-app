@@ -50,8 +50,9 @@ All configuration files and certificates are located in the resources directory.
 
 Remember to update the *pathToConfigJSON* variable in your Application.cfc.  
 
+```javascript
   <cfset pathToConfigJSON = getDirectoryFromPath(getCurrentTemplatePath()) & "resources/config.json"> 
-
+```
 
 ## Ready to Rock
 Open your browser to http://localhost:8500/xero-cfml-sample-app and click the "Connect to Xero" button to start the oAuth flow.
