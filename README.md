@@ -20,93 +20,46 @@ Alternatively, you can clone or download this repo into your wwwroot folder
 [Create a Xero user account](https://www.xero.com/signup) for free.  Xero does not have a designated "sandbox" for development.  Instead you'll use the free Demo company for development.  Learn how to get started with [Xero Development Accounts](http://developer.xero.com/documentation/getting-started/development-accounts/).
 
 
-### Create a Xero a App
-You'll need to decide which type of Xero app you'll be building.
+### Create a Xero Public App
+Go to [http://app.xero.com](http://app.xero.com) and login with your Xero user account to create a Xero Public app.
 
 * [Public](http://developer.xero.com/documentation/auth-and-limits/public-applications/)
-* [Private](http://developer.xero.com/documentation/auth-and-limits/private-applications/)
-* [Partner](http://developer.xero.com/documentation/auth-and-limits/partner-applications/)
 
-Go to [http://app.xero.com](http://app.xero.com) and login with your Xero user account to create an Xero app.
 
 ### Update Config.json with Keys and Certificates
 
-Look in the resources directory for your config.json file.  The min required attirbutes for each app type is show below.
+Look in the resources directory for your config.json file. 
 
 Refer to Xero Developer Center [Getting Started](http://developer.xero.com/documentation/getting-started/getting-started-guide/) if you haven't created your Xero App yet - this is where you'll find the Consumer Key and Secret. 
 
-Private and Partner apps require a [public/private key pair](http://developer.xero.com/documentation/api-guides/create-publicprivate-key/) created with OpenSSL.  The private key should be exported as a pk8 file and placed in the "resources/certs" folder.  Jump to Generate Public/Private Key below to see terminal commands.
 
 **Public Application**
 ```javascript
 { 
   "AppType" : "PUBLIC",
   "UserAgent": "YourAppName",
-  "ConsumerKey" : "WTCXXXXXXXXXXXXXXXXXXXXXXKG",
-  "ConsumerSecret" : "GJ2XXXXXXXXXXXXXXXXXXXXXXXXWZ",
+  "ConsumerKey" : "__YOUR_CONSUMER_KEY__",
+  "ConsumerSecret" : "__YOUR_CONSUMER_KEY_SECRET__",
   "CallbackBaseUrl" : "http://localhost:8500",
   "CallbackPath" : "/xero-cfml-sample-app/callback.cfm"
 }
 ```
 
-**Private Application**
-Note: private applications connect to a single Xero organzation and therefore do not require the 3-legged oAuth flow.
-```javascript
-{ 
-  "AppType" : "PRIVATE",
-  "UserAgent": "YourAppName",
-  "ConsumerKey" : "CW1XXXXXXXXXXXXXXXXXXXXXXXXYG",
-  "ConsumerSecret" : "SRJXXXXXXXXXXXXXXXXXXXXXXXZEA6",
-  "PrivateKeyCert" :  "certs/public_privatekey.pfx",
-  "PrivateKeyPassword" :  "1234"
-}
-```
-**Partner Application**
-```javascript
-{ 
-  "AppType" : "PARTNER",
-  "UserAgent": "YourAppName",
-  "ConsumerKey" : "FA6UXXXXXXXXXXXXXXXXXXXXXXRC7",
-  "ConsumerSecret" : "7FMXXXXXXXXXXXXXXXXXXXXXXXXXCSA",
-  "CallbackBaseUrl" : "http://localhost:8500",
-  "CallbackPath" : "/xero-cfml-sample-app/callback.cfm",
-  "PrivateKeyCert" :  "certs/public_privatekey.pfx",
-  "PrivateKeyPassword" :  "1234"
-}
-```
+## Secure your config.json file
+All configuration files and certificates are located in the resources directory.  In a production environment, you will move this directory outside the webroot for security reasons.  
 
-**Optionals Attributes**
+Remember to update the *pathToConfigJSON* variable in your Application.cfc.  
 
-* Accept: format of data returned from API  (application/xml, application/json, application/pdf) *default is application/json*
-* ApiBaseUrl: base URL for API calls      *default is https://api.xero.com*
-* ApiEndpointPath: path for API Calls      *default is /api.xro/2.0/*
-* RequestTokenPath: path for Request Token      *default it /oauth/RequestToken*
-* AuthenticateUrl: path for redirect to authorize      *default is /oauth/RequestToken*
-* AccessTokenPath: path for Access Token         *default is https://api.xero.com/oauth/Authorize*
+  <cfset pathToConfigJSON = getDirectoryFromPath(getCurrentTemplatePath()) & "resources/config.json"> 
 
 
-## Secure your Keys and Certificates
-All configuration files and certificates are located in the resources directory.  In a production environment, you will move this directory outside the webroot for security reasons.  Remember to update the *pathToConfigJSON* variable in your Application.cfc.  
-
-<cfset pathToConfigJSON = getDirectoryFromPath(getCurrentTemplatePath()) & "resources/config.json"> 
+## Ready to Rock
+Open your browser to http://localhost:8500/xero-cfml-sample-app and click the "Connect to Xero" button to start the oAuth flow.
 
 
-### Generate Public-Private Key
-A [public/private key pair](http://developer.xero.com/documentation/api-guides/create-publicprivate-key/) is required to sign your RSA-SHA1 oAuth requests.  Upload the public key for Private and Partner apps at http://app.xero.com.  Store the private key  in the /resources/certs directory.
+## Code behind this App
 
-The basic command line steps to generate a public and private key using OpenSSL are as follows:
-
-	openssl genrsa -out privatekey.pem 1024
-	openssl req -new -x509 -key privatekey.pem -out publickey.cer -days 1825
-	openssl pkcs12 -export -out public_privatekey.pfx -inkey privatekey.pem -in publickey.cer
-
-For this SDK, you will need to run one additional command to create a .pk8 formatted private key.
-
-	openssl pkcs8 -topk8 -in privatekey.pem -outform DER -nocrypt -out privatekey.pk8
-
-## OAuth Flow
-
-For Public & Partner Apps you'll use 3 legged oAuth, which involves a RequestToken Call, then redirecting the user to Xero to select a Xero org, then callback to your server where you'll swap the request token for your 30 min access tokens.
+For Public Apps you'll use 3 legged oAuth, which involves a RequestToken Call, then redirecting the user to Xero to select a Xero org, then callback to your server where you'll swap the request token for your 30 min access tokens.
 
 ### requesttoken.cfm
 

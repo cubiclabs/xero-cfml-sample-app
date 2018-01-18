@@ -1,7 +1,8 @@
 { 
-	"AppType" : "PRIVATE",
+	"AppType" : "PUBLIC",
 	"UserAgent" : "MyAppName",
 	"ConsumerKey" : "__YOUR_CONSUMER_KEY__",
 	"ConsumerSecret" : "__YOUR_CONSUMER_KEY_SECRET__",
-	"PrivateKeyCert" :  "certs/privatekey.pk8"
+	"CallbackBaseUrl" : "http://localhost:8500",
+  	"CallbackPath" : "/xero-cfml-sample-app/callback.cfm"
 }
