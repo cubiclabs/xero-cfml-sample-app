@@ -4,7 +4,7 @@ Sample App for Xero CFML SDK - connect to Xero Accounting API with CFML applicat
 * [Getting Started](#getting-started)
 * [Create a Xero User Account](#create-a-xero-user-account)
 * [Create a Xero a App](#create-a-xero-a-app)
-* [Update Config.json with Keys and Certificates](#update-config.json-with-keys-and-certificates)
+* [Update Config.json with Key and Secret](#update-config.json-with-key-and-secret)
 
 * [License](#license)
 
@@ -26,7 +26,7 @@ Go to [http://app.xero.com](http://app.xero.com) and login with your Xero user a
 * [Public](http://developer.xero.com/documentation/auth-and-limits/public-applications/)
 
 
-### Update Config.json with Keys and Certificates
+### Update Config.json with Key and Secret
 
 Look in the resources directory for your config.json file. 
 
