@@ -12,7 +12,7 @@
     <cfset THIS.serialization.preservecaseforstructkey = true>
 
     <cfset this.mappings = structNew() />
-    <cfset this.mappings["/modules/xero-cfml/cfc"] = getDirectoryFromPath(getCurrentTemplatePath()) & "cfc/" />
+    <cfset this.mappings["/cfc"] = getDirectoryFromPath(getCurrentTemplatePath()) & "modules/xero-cfml/" />
     <cfset this.mappings["/common"] = getDirectoryFromPath(getCurrentTemplatePath()) & "common/" />
  
     <!--- Define the page request properties. --->
