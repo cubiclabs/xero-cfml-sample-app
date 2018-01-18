@@ -1,14 +1,9 @@
-Xero-CFML
-=========
+Sample App for Xero CFML SDK - connect to Xero Accounting API with CFML application servers.
 
-CFML SDK for Xero API - use with CFML application servers.
 
-* [Things to note](#things-to-note)
-* [Select an Application Type](#select-an-application-type)
 * [Getting Started](#getting-started)
-* [To Do](#to-do)
-* [Additional Reading](#additional-reading)
-* [Acknowledgements](#acknowledgements)
+* [Select an Application Type](#select-an-application-type)
+
 * [License](#license)
 
 ## Things to note
