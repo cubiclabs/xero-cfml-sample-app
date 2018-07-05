@@ -5,17 +5,16 @@
 <html>
 <head>
 	<title>Xero-CFML Sample App - Callback</title>
-	<cfinclude template="/common/header.cfm" >
+	<cfinclude template="common/header.cfm" >
 </head>
 <body>
 <div class="container">
 
 <cfscript>
 
-res=createObject("component","cfc.xero").init(); 
 
 try {
-	res.accessToken(aCallbackParams = cgi.query_string);
+	application.xero.accessToken(aCallbackParams = cgi.query_string);
 	location("get.cfm","false");
 }	
 

@@ -4,23 +4,22 @@
 2) add your consumerkey & secret and set callback URL to the config.json file
 3) save and run
 --->
-<cfif application.config["AppType"] EQ "PRIVATE">
+<cfif application.xero.config["AppType"] EQ "PRIVATE">
     <cflocation url="get.cfm" addtoken="false">
 </cfif>
 <html>
 <head>
 	<title>CFML Xero Application - Request Token</title>
-	<cfinclude template="/common/header.cfm" >
+	<cfinclude template="common/header.cfm" >
 </head>
 <body>
 
 <cfscript>
 
-req=createObject("component","cfc.xero").init(); 
 
 try {
-	req.requestToken();
-	location(req.getAuthorizeUrl());
+	application.xero.requestToken();
+	location(application.xero.getAuthorizeUrl());
 }	
 
 catch(any e){

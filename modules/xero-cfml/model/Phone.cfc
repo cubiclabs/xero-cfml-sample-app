@@ -1,8 +1,8 @@
-<cfcomponent displayname="Phone" output="false" extends="cfc.xeroclient"
+<cfcomponent displayname="Phone" output="false" extends="xeroclient"
   hint="I am the Phone Class.">
 
 <!--- PROPERTIES --->
-
+  <cfproperty name="PhoneType" type="String" default="" />
   <cfproperty name="PhoneNumber" type="String" default="" />
   <cfproperty name="PhoneAreaCode" type="String" default="" />
   <cfproperty name="PhoneCountryCode" type="String" default="" />
@@ -10,7 +10,8 @@
 <!--- INIT --->
   <cffunction name="init" access="public" output="false"
     returntype="any" hint="I am the constructor method for the Phone Class.">
-      
+    <cfargument name="xero" type="any">
+    <cfset variables.xero = arguments.xero>
     <cfreturn this />
   </cffunction>
 
@@ -54,23 +55,27 @@
         <cfscript>
           myStruct=StructNew();
           if (archive) {
-            myStruct.PhoneID=getPhoneID();
-            myStruct.Status=getStatus();
+            myStruct["PhoneID"]=getPhoneID();
+            myStruct["Status"]=getStatus();
           } else {
-
+            if (structKeyExists(variables.instance,"PhoneType")) {
+              if (NOT listFindNoCase(arguments.exclude, "PhoneType")) {
+                myStruct["PhoneType"]=getPhoneType();
+              }
+            }
             if (structKeyExists(variables.instance,"PhoneNumber")) {
               if (NOT listFindNoCase(arguments.exclude, "PhoneNumber")) {
-                myStruct.PhoneNumber=getPhoneNumber();
+                myStruct["PhoneNumber"]=getPhoneNumber();
               }
             }
             if (structKeyExists(variables.instance,"PhoneAreaCode")) {
               if (NOT listFindNoCase(arguments.exclude, "PhoneAreaCode")) {
-                myStruct.PhoneAreaCode=getPhoneAreaCode();
+                myStruct["PhoneAreaCode"]=getPhoneAreaCode();
               }
             }
             if (structKeyExists(variables.instance,"PhoneCountryCode")) {
               if (NOT listFindNoCase(arguments.exclude, "PhoneCountryCode")) {
-                myStruct.PhoneCountryCode=getPhoneCountryCode();
+                myStruct["PhoneCountryCode"]=getPhoneCountryCode();
               }
             }
           }
@@ -89,7 +94,11 @@
 
         <cfset obj = arguments.objects>
         <cfscript>
-
+        if (structKeyExists(obj,"PhoneType")) {
+          setPhoneType(obj.PhoneType);
+        } else {
+          setPhoneType("");
+        }
         if (structKeyExists(obj,"PhoneNumber")) {
           setPhoneNumber(obj.PhoneNumber);
         } else {
@@ -186,7 +195,18 @@
   </cffunction>
 
 <!--- GETTER / SETTER  --->
+   <!---
+   * See Tax Types
+   * @return PhoneType
+  --->
+  <cffunction name="getPhoneType" access="public" output="false" hint="I return the PhoneType">
+    <cfreturn variables.instance.PhoneType />
+  </cffunction>
 
+  <cffunction name="setPhoneType" access="public"  output="false" hint="I set the PhoneType into the variables.instance scope.">
+    <cfargument name="PhoneType" type="String" hint="I am the PhoneType." />
+      <cfset variables.instance.PhoneType = arguments.PhoneType />
+  </cffunction>
   <!---
    * max length = 50
    * @return PhoneNumber
