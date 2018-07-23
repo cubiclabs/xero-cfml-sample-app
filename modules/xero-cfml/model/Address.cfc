@@ -1,8 +1,8 @@
-<cfcomponent displayname="Address" output="false" extends="cfc.xeroclient"
+<cfcomponent displayname="Address" output="false" extends="xeroclient"
   hint="I am the Address Class.">
 
 <!--- PROPERTIES --->
-
+  <cfproperty name="AddressType" type="String" default="" />
   <cfproperty name="AddressLine1" type="String" default="" />
   <cfproperty name="AddressLine2" type="String" default="" />
   <cfproperty name="AddressLine3" type="String" default="" />
@@ -16,7 +16,8 @@
 <!--- INIT --->
   <cffunction name="init" access="public" output="false"
     returntype="any" hint="I am the constructor method for the Address Class.">
-      
+    <cfargument name="xero" type="any">
+    <cfset variables.xero = arguments.xero>
     <cfreturn this />
   </cffunction>
 
@@ -37,69 +38,92 @@
      </cfif>
   </cffunction>
 
+  <cffunction name="toStruct" access="public" output="false">
+    <cfargument name="exclude" type="String" default="" hint="I am a list of attributes to exclude from JSON" />
+      <cfif len(arguments.exclude) GT 0>
+        <cfset exclude = arguments.exclude>
+      <cfelse>
+        <cfset exclude = "">
+      </cfif>
+
+        <cfscript>
+          myStruct=StructNew();
+          myStruct=this.toJSON(exclude=exclude,returnType="struct");
+        </cfscript>
+    <cfreturn myStruct />
+  </cffunction>
+
   <cffunction name="toJSON" access="public" output="false">
      <cfargument name="exclude" type="String" default="" hint="I am a list of attributes to exclude from JSON payload" />
      <cfargument name="archive" type="boolean" default="false" hint="I flag to return only the req. fields as JSON payload for archiving an object" />
+     <cfargument name="returnType" type="String" default="json" hint="I set how the data is returned" />
     
      
         <cfscript>
           myStruct=StructNew();
           if (archive) {
-            myStruct.AddressID=getAddressID();
-            myStruct.Status=getStatus();
+            myStruct["AddressID"]=getAddressID();
+            myStruct["Status"]=getStatus();
           } else {
-
+            if (structKeyExists(variables.instance,"AddressType")) {
+              if (NOT listFindNoCase(arguments.exclude, "AddressType")) {
+                myStruct["AddressType"]=getAddressType();
+              }
+            }
             if (structKeyExists(variables.instance,"AddressLine1")) {
               if (NOT listFindNoCase(arguments.exclude, "AddressLine1")) {
-                myStruct.AddressLine1=getAddressLine1();
+                myStruct["AddressLine1"]=getAddressLine1();
               }
             }
             if (structKeyExists(variables.instance,"AddressLine2")) {
               if (NOT listFindNoCase(arguments.exclude, "AddressLine2")) {
-                myStruct.AddressLine2=getAddressLine2();
+                myStruct["AddressLine2"]=getAddressLine2();
               }
             }
             if (structKeyExists(variables.instance,"AddressLine3")) {
               if (NOT listFindNoCase(arguments.exclude, "AddressLine3")) {
-                myStruct.AddressLine3=getAddressLine3();
+                myStruct["AddressLine3"]=getAddressLine3();
               }
             }
             if (structKeyExists(variables.instance,"AddressLine4")) {
               if (NOT listFindNoCase(arguments.exclude, "AddressLine4")) {
-                myStruct.AddressLine4=getAddressLine4();
+                myStruct["AddressLine4"]=getAddressLine4();
               }
             }
             if (structKeyExists(variables.instance,"City")) {
               if (NOT listFindNoCase(arguments.exclude, "City")) {
-                myStruct.City=getCity();
+                myStruct["City"]=getCity();
               }
             }
             if (structKeyExists(variables.instance,"Region")) {
               if (NOT listFindNoCase(arguments.exclude, "Region")) {
-                myStruct.Region=getRegion();
+                myStruct["Region"]=getRegion();
               }
             }
             if (structKeyExists(variables.instance,"PostalCode")) {
               if (NOT listFindNoCase(arguments.exclude, "PostalCode")) {
-                myStruct.PostalCode=getPostalCode();
+                myStruct["PostalCode"]=getPostalCode();
               }
             }
             if (structKeyExists(variables.instance,"Country")) {
               if (NOT listFindNoCase(arguments.exclude, "Country")) {
-                myStruct.Country=getCountry();
+                myStruct["Country"]=getCountry();
               }
             }
             if (structKeyExists(variables.instance,"AttentionTo")) {
               if (NOT listFindNoCase(arguments.exclude, "AttentionTo")) {
-                myStruct.AttentionTo=getAttentionTo();
+                myStruct["AttentionTo"]=getAttentionTo();
               }
             }
           }
         </cfscript>
 
+    <cfif returnType EQ "Struct">
+       <cfreturn myStruct />
+    <cfelse>
       <cfset variables.jsonObj = serializeJSON(myStruct)>
-
-   <cfreturn variables.jsonObj />
+      <cfreturn variables.jsonObj />
+    </cfif>
   </cffunction>
 
   <cffunction name="populate" access="public" output="false">
@@ -107,7 +131,11 @@
 
         <cfset obj = arguments.objects>
         <cfscript>
-
+        if (structKeyExists(obj,"AddressType")) {
+          setAddressType(obj.AddressType);
+        } else {
+          setAddressType("");
+        }
         if (structKeyExists(obj,"AddressLine1")) {
           setAddressLine1(obj.AddressLine1);
         } else {
@@ -233,6 +261,19 @@
   </cffunction>
 
 <!--- GETTER / SETTER  --->
+
+  <!---
+   * See Address Types
+   * @return AddressType
+  --->
+  <cffunction name="getAddressType" access="public" output="false" hint="I return the AddressType">
+    <cfreturn variables.instance.AddressType />
+  </cffunction>
+
+  <cffunction name="setAddressType" access="public"  output="false" hint="I set the AddressType into the variables.instance scope.">
+    <cfargument name="AddressType" type="String" hint="I am the AddressType." />
+      <cfset variables.instance.AddressType = arguments.AddressType />
+  </cffunction>
 
   <!---
    * max length = 500

@@ -9,26 +9,23 @@
 <html>
 <head>
 	<title>Xero-CFML Sample App</title>
-	<cfinclude template="/common/header.cfm" >
+	<cfinclude template="common/header.cfm" >
 </head>
 <body>
 
 <cfif showform>
-	<cfinclude template="/common/resource.cfm">
+	<cfinclude template="common/resource.cfm">
 </cfif>
 <div class="container">
 
 <cfscript>
-
 try {
-
 	switch(form.endpoint) {
 		case "Accounts": 
 		if(showform) {
 			writeOutput("<strong>ACCOUNTS</strong><br>");
 		}
-		account=createObject("component","cfc.model.Account").init(); 
-
+		account=application.xero.getModel("Account"); 
 		switch(form.action) {
 			case "Create":
 				account.setName("Generated " & RandRange(1, 100000, "SHA1PRNG"));
@@ -40,13 +37,12 @@ try {
 	        case "Read":
 				account.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(account.getList()) & "<br>");
-
 				if (ArrayLen(account.getList()) GT 0){ 	
 					account.getObject(1);
 					writeOutput("Get Item by Array Position -ID: " & account.getAccountID() & " -  " & account.getName()  &  "<br>");
-
 					account.getById(account.getAccountID());
 					writeOutput("Get By - ID: " & account.getAccountID() & "<br>");
+					writeDump(account.toStruct());
 				}
 	        break;
 	        case "Update":
@@ -59,7 +55,6 @@ try {
 				account.setDescription("My Updated Desc");
 				account.update();
 				writeOutput("Update - ID: " & account.getAccountID() & "<br>");
-
 	        break;
 	        case "Delete":
 		         // Create then ... delete
@@ -67,10 +62,8 @@ try {
 				account.setCode(RandRange(1, 10000, "SHA1PRNG"));
 				account.setType("CURRENT");
 				account.create();
-
 				account.delete();
 				writeOutput("Deleted - ID: " & account.getAccountID() & "<br>");
-
 			break;
 	        case "Archive":
 	         	// Create then ... archive
@@ -78,7 +71,6 @@ try {
 				account.setCode(RandRange(1, 10000, "SHA1PRNG"));
 				account.setType("CURRENT");
 				account.create();
-
 				account.archive();
 				writeOutput("Archive - ID: " & account.getAccountID() & "<br>");
 			break;
@@ -91,21 +83,19 @@ try {
 			if(showform) {
 				writeOutput("<strong>BANK TRANSACTIONS</strong><br>");
 			}
-	    	banktransaction=createObject("component","cfc.model.BankTransaction").init(); 
+	    	banktransaction=application.xero.getModel("BankTransaction"); 
 			switch(form.action) {
 			case "Create":
-				bankaccount = createObject("component","cfc.model.Account").init().getAll(where='Type=="BANK"').getObject(1);
-				salesaccount =  createObject("component","cfc.model.Account").init().getAll(where='Type=="REVENUE"').getObject(1);
-				contact = createObject("component","cfc.model.Contact").init().getAll().getObject(1);
-
-				lineitem=createObject("component","cfc.model.LineItem").init(); 
+				bankaccount = application.xero.getModel("Account").getAll(where='Type=="BANK"').getObject(1);
+				salesaccount =  application.xero.getModel("Account").getAll(where='Type=="REVENUE"').getObject(1);
+				contact = application.xero.getModel("Contact").getAll().getObject(1);
+				lineitem=application.xero.getModel("LineItem"); 
 				lineitem.setDescription("consulting");
 				lineitem.setQuantity("2");
 				lineitem.setUnitAmount("100");
 				lineitem.setAccountCode(salesaccount.getCode());
 				aLineItem = ArrayNew(1);
 				aLineItem.append(lineitem.toStruct());
-
 				banktransaction.setType("SPEND");
 				banktransaction.setBankAccount(bankaccount.toStruct());
 				banktransaction.setContact(contact.toStruct());
@@ -117,12 +107,11 @@ try {
 	        case "Read":
 				banktransaction.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(banktransaction.getList()) & "<br>");
-
 				banktransaction.getObject(1);
 				writeOutput("Get 1st Item -ID: " & banktransaction.getBanktransactionID() & "<br>");
-
 				banktransaction.getById(banktransaction.getBanktransactionID());
 				writeOutput("Get By - ID: " & banktransaction.getBanktransactionID() & "<br>");
+				writeDump(banktransaction.toStruct());
 				
 	        break;
 	        case "Update":
@@ -137,7 +126,6 @@ try {
 				banktransaction.setStatus("DELETED");
 				banktransaction.delete();
 				writeOutput("Deleted - ID: " & banktransaction.getBanktransactionID() & "<br>");	        
-
 			break;
 			default: 
 				writeOutput(form.action & " not supported on the " & form.endpoint & " endpoint");
@@ -148,11 +136,11 @@ try {
 			if(showform) {
 				writeOutput("<strong>BANK TRANSFER</strong><br>");
 			}
-			banktransfer=createObject("component","cfc.model.BankTransfer").init(); 	
+			banktransfer=application.xero.getModel("BankTransfer"); 	
 		
 			switch(form.action) {
 			case "Create":
-				bankaccount = createObject("component","cfc.model.Account").init().getAll(where='Type=="BANK"');
+				bankaccount = application.xero.getModel("Account").getAll(where='Type=="BANK"');
 				if (ArrayLen(bankaccount.getList()) GT 1) {	
 					banktransfer.setFromBankAccount(bankaccount.getObject(1).toStruct());
 					banktransfer.setToBankAccount(bankaccount.getObject(2).toStruct());
@@ -162,7 +150,6 @@ try {
 				} else {
 					writeOutput("You need 2 bank accounts to create a transfer.<br>");
 				}
-
 	        break;
 	        case "Read":
 				banktransfer.getAll();
@@ -174,6 +161,8 @@ try {
 				
 					banktransfer.getById(banktransfer.getBanktransferID());
 					writeOutput("Get By - ID: " & banktransfer.getBanktransferID() & "<br>");
+
+					writeDump(banktransfer.toStruct());
 				}
 	        break;
 			default: 
@@ -185,18 +174,17 @@ try {
 			if(showform) {
 				writeOutput("<strong>BRANDING THEME</strong><br>");
 			}
-			brandingtheme=createObject("component","cfc.model.BrandingTheme").init(); 	
+			brandingtheme=application.xero.getModel("BrandingTheme"); 	
 		
 			switch(form.action) {
 			case "Read":
 				brandingtheme.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(brandingtheme.getList()) & "<br>");
-
 				brandingtheme.getObject(1);
 				writeOutput("Get an Item from List -ID: " & brandingtheme.getBrandingthemeID() & "<br>");
-
 				brandingtheme.getById(brandingtheme.getBrandingthemeID());
 				writeOutput("Get By - ID: " & brandingtheme.getBrandingthemeID() & "<br>");
+				writeDump(brandingtheme.toStruct());
 		    break;
 			default: 
 				writeOutput(form.action & " not supported on the " & form.endpoint & " endpoint");
@@ -207,25 +195,21 @@ try {
 			if(showform) {
 				writeOutput("<strong>CONTACTS</strong><br>");
 			}
-			contact=createObject("component","cfc.model.Contact").init(); 
-
+			contact=application.xero.getModel("Contact"); 
 			switch(form.action) {
 			case "Create":
 				contact.setName("Sid Maestre " & RandRange(1, 100000, "SHA1PRNG"));
 				contact.create();
 				writeOutput("Create - ID: " & contact.getContactID() & "<br>");
-
 	        break;
 	        case "Read":
-	    	contact.getAll();
-			writeOutput("Get ALL - count: " & ArrayLen(contact.getList()) & "<br>");
-
-			contact.getObject(1);
-			writeOutput("Get 1st Item -ID: " & contact.getContactID() & "<br>");
-
-			contact.getById(contact.getContactID());
-			writeOutput("Get By - ID: " & contact.getContactID() & "<br>");
-
+		    	contact.getAll();
+				writeOutput("Get ALL - count: " & ArrayLen(contact.getList()) & "<br>");
+				contact.getObject(1);
+				writeOutput("Get 1st Item -ID: " & contact.getContactID() & "<br>");
+				contact.getById(contact.getContactID());
+				writeOutput("Get By - ID: " & contact.getContactID() & "<br>");
+				writeDump(contact.toStruct());
 	        break;
 	        case "Update":
 	        	contact.getAll().getObject(1);
@@ -239,20 +223,17 @@ try {
 				contact.setContactStatus("ARCHIVED");
 				contact.archive();
 				writeOutput("Archived - ID: " & contact.getContactID() & "<br>");
-
 			break;
 			default: 
 				writeOutput(form.action & " not supported on the " & form.endpoint & " endpoint");
 			break;
 			}
-
 		break;
 		case "ContactGroups":
 			if(showform) {
 				writeOutput("<strong>CONTACTGROUP</strong><br>");
 			}
-			contactgroup=createObject("component","cfc.model.ContactGroup").init(); 
-
+			contactgroup=application.xero.getModel("ContactGroup"); 
 			switch(form.action) {
 			case "Create":
 				contactgroup.setName("Sid Group " & RandRange(1, 100000, "SHA1PRNG"));
@@ -263,24 +244,21 @@ try {
 	        case "Read":
 				contactgroup.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(contactgroup.getList()) & "<br>");
-
 				contactgroup.getObject(1);
 				writeOutput("Get an Item from List -Name: " & contactgroup.getName() & "<br>");
 				writeOutput("Get an Item from List -ID: " & contactgroup.getContactGroupID() & "<br>");
-
 				contactgroup.getById(contactgroup.getContactGroupID());
 				writeOutput("Get By - ID: " & contactgroup.getContactGroupID() & "<br>");
-
+				writeDump(contactgroup.toStruct());
 	        break;
 	        case "Update":
 				contactgroup.getAll().getObject(1);
 	        	contactgroup.setName("Sid Updated Group " &RandRange(1, 100000, "SHA1PRNG"));
 				contactgroup.update();
 				writeOutput("Update - ID: " & contactgroup.getContactGroupID() & "<br>");
-
 	        break;
 	        case "Add":
-				cgContact = createObject("component","cfc.model.Contact").init().getAll().getObject(1);
+				cgContact = application.xero.getModel("Contact").getAll().getObject(1);
 				aContact = ArrayNew(1);
 				aContact.append(cgContact.toStruct(Only="id"));
 				
@@ -288,11 +266,10 @@ try {
 				contactgroup.setContacts(aContact);
 				contactgroup.addContacts();
 				writeOutput("Add Contacts - Name: " & contactgroup.getName() & "<br>");
-
 			break;
 	        case "RemoveOne":
 	        	// Add the Contact first ... then remove
-	        	cgContact = createObject("component","cfc.model.Contact").init().getAll().getObject(1);
+	        	cgContact = application.xero.getModel("Contact").getAll().getObject(1);
 				aContact = ArrayNew(1);
 				aContact.append(cgContact.toStruct(Only="id"));
 				contactgroup.getAll().getObject(1);
@@ -313,26 +290,23 @@ try {
 				writeOutput(form.action & " not supported on the " & form.endpoint & " endpoint");
 				break;
 			}
-
 		break;
 		case "CreditNotes":
 			if(showform) {
 				writeOutput("<strong>CREDIT NOTE</strong><br>");
 			}
-			creditnote=createObject("component","cfc.model.CreditNote").init(); 
-
+			creditnote=application.xero.getModel("CreditNote"); 
 			switch(form.action) {
 			case "Create":
-				contact=createObject("component","cfc.model.Contact").init(); 
+				contact=application.xero.getModel("Contact"); 
 	        	contact.getAll().getObject(1);
-				lineitem=createObject("component","cfc.model.LineItem").init(); 
+				lineitem=application.xero.getModel("LineItem"); 
 				lineitem.setDescription("consulting");
 				lineitem.setQuantity("2");
 				lineitem.setUnitAmount("100");
 				lineitem.setAccountCode("400");
 				aLineItem = ArrayNew(1);
 				aLineItem.append(lineitem.toStruct());
-
 				creditnote.setType("ACCPAYCREDIT");
 				creditnote.setContact(contact.toStruct(Only="id"));
 				creditnote.setLineitems(aLineItem);
@@ -344,20 +318,17 @@ try {
 	        case "Read":
 			   	creditnote.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(creditnote.getList()) & "<br>");
-
 				creditnote.getObject(1);
 				writeOutput("Get an Item from List -ID: " & creditnote.getCreditNoteID() & "<br>");
-
 				creditnote.getById(creditnote.getCreditNoteID());
 				writeOutput("Get By - ID: " & creditnote.getCreditNoteID() & "<br>");
-
+				writeDump(creditnote.toStruct());
 	        break;
 	        case "Update":
 			   	creditnote.getAll().getObject(1);
 				creditnote.setCreditNoteNumber(RandRange(1, 1000, "SHA1PRNG"));
 				creditnote.update();
 				writeOutput("Update - ID: " & creditnote.getCreditNoteID() & "<br>");
-
 	        break;
 			default: 
 				writeOutput(form.action & " not supported on the " & form.endpoint & " endpoint");
@@ -368,8 +339,7 @@ try {
 			if(showform) {
 				writeOutput("<strong>CURRENCY</strong><br>");
 			}
-			currency=createObject("component","cfc.model.Currency").init(); 
-
+			currency=application.xero.getModel("Currency"); 
 			switch(form.action) {
 			case "Create":
 				currency.setDescription("Euro");
@@ -381,13 +351,12 @@ try {
 	        case "Read":
 				currency.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(currency.getList()) & "<br>");
-
 				currency.getObject(1);
 				writeOutput("Get an Item from List -desc: " & currency.getDescription() & "<br>");
 							
 				currency.getById(currency.getCode());
 				writeOutput("Get By - Code: " & currency.getCode() & "<br>");
-
+				writeDump(currency.toStruct());
 	        break;
 			default: 
 				writeOutput(form.action & " not supported on the " & form.endpoint & " endpoint");
@@ -398,8 +367,7 @@ try {
 			if(showform) {
 				writeOutput("<strong>EMPLOYEES</strong><br>");
 			}
-			employee=createObject("component","cfc.model.Employee").init(); 
-
+			employee=application.xero.getModel("Employee"); 
 			switch(form.action) {
 			case "Create":
 				employee.setFirstName("Joe " & RandRange(1, 100000, "SHA1PRNG"));
@@ -411,13 +379,11 @@ try {
 	        case "Read":	
 				employee.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(employee.getList()) & "<br>");
-
 				employee.getObject(1);
 				writeOutput("Get an Item by Position -ID: " & employee.getEmployeeID() & "<br>");			
-
 				employee.getById(employee.getEmployeeID());
 				writeOutput("Get By - ID: " & employee.getEmployeeID() & "<br>");
-
+				writeDump(employee.toStruct());
 	        break;
 	        case "Update":
 	        	employee.getAll().getObject(1);
@@ -435,12 +401,12 @@ try {
 			if(showform) {
 				writeOutput("<strong>INVOICES</strong><br>");
 			}
-			invoice=createObject("component","cfc.model.Invoice").init(); 
+			invoice=application.xero.getModel("Invoice"); 
 			
-			contact=createObject("component","cfc.model.Contact").init(); 
+			contact=application.xero.getModel("Contact"); 
         	contact.getAll().getObject(1);
 		
-			lineitem=createObject("component","cfc.model.LineItem").init(); 
+			lineitem=application.xero.getModel("LineItem"); 
 			lineitem.setDescription("consulting");
 			lineitem.setQuantity("2");
 			lineitem.setUnitAmount("100");
@@ -462,13 +428,12 @@ try {
 	        case "Read":
 				invoice.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(invoice.getList()) & "<br>");
-
 				invoice.getObject(3);
 				writeOutput("Get 3rd Item -ID: " & invoice.getInvoiceID() & "<br>");
 			
 				invoice.getById(invoice.getInvoiceID());
-				writeOutput("Get By - ID: " & invoice.getInvoiceID() & "<br>");		
-
+				writeOutput("Get By - ID: " & invoice.getInvoiceID() & "<br>");	
+				writeDump(invoice.toStruct());
 	        break;
 	        case "Update":
 				// Create invoice ... then Update
@@ -478,11 +443,9 @@ try {
 				invoice.setStatus("DRAFT");
 				invoice.setDueDate("2018-5-5");
 				invoice.create();
-
 				invoice.setReference("Hello World");
 				invoice.update();
 				writeOutput("Update - ID: " & invoice.getInvoiceID() & "<br>");
-
 	        break;
 	        case "Delete":
 				// Create DRAFT invoice ... then Delete
@@ -492,10 +455,8 @@ try {
 				invoice.setStatus("DRAFT");
 				invoice.setDueDate("2018-5-5");
 				invoice.create();
-
 				invoice.delete();
 				writeOutput("Deleted - ID: " & invoice.getInvoiceID() & "<br>");
-
 			break;
 	        case "Void":
 		        // Create AUTHORISED invoice ... then Delete
@@ -507,7 +468,6 @@ try {
 				invoice.create();
 	    		invoice.void();
 				writeOutput("Voided - ID: " & invoice.getInvoiceID() & "<br>");
-
 			break;
 			default: 
 				writeOutput(form.action & " not supported on the " & form.endpoint & " endpoint");
@@ -518,13 +478,12 @@ try {
 			if(showform) {
 				writeOutput("<strong>INVOICE REMINDERS</strong><br>");
 			}
-			invoicereminder=createObject("component","cfc.model.InvoiceReminder").init(); 
+			invoicereminder=application.xero.getModel("InvoiceReminder"); 
 		
 			switch(form.action) {
 	        case "Read":
 				invoicereminder.getAll();
 				writeOutput("Get ALL - Enabled?: " & invoicereminder.getEnabled() & "<br>");	
-
 	        break;
 			default: 
 				writeOutput(form.action & " not supported on the " & form.endpoint & " endpoint");
@@ -535,8 +494,7 @@ try {
 			if(showform) {
 				writeOutput("<strong>ITEMS</strong><br>");
 			}
-			item=createObject("component","cfc.model.Item").init(); 
-
+			item=application.xero.getModel("Item"); 
 			switch(form.action) {
 			case "Create":
 				item.setCode(RandRange(1, 100000, "SHA1PRNG"));
@@ -549,13 +507,12 @@ try {
 	        case "Read":
 				item.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(item.getList()) & "<br>");
-
 				item.getObject(1);
 				writeOutput("Get an Item from List -ID: " & item.getItemID() & "<br>");
 				
 				item.getById(item.getCode());
 				writeOutput("Get By - ID: " & item.getCode() & "<br>");
-
+				writeDump(item.toStruct());
 	        break;
 	        case "Update":
 				item.getAll().getObject(1);
@@ -568,7 +525,6 @@ try {
 				item.getAll().getObject(1);
 				writeOutput("About to delete - Item: " & item.getName() & "<br>");					
 				item.delete();
-
 				writeOutput("Deleted - Item: <br>");
 	         
 			break;
@@ -581,19 +537,16 @@ try {
 			if(showform) {
 				writeOutput("<strong>JOURNALS</strong><br>");
 			}
-			journal=createObject("component","cfc.model.Journal").init(); 
-
+			journal=application.xero.getModel("Journal"); 
 			switch(form.action) {
 		    case "Read":
 				journal.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(journal.getList()) & "<br>");
-
 				journal.getObject(1);
 				writeOutput("Get an Item from List -ID: " & journal.getJournalID() & "<br>");
-
 				journal.getById(journal.getJournalID());
 				writeOutput("Get By ID: " & journal.getJournalID() & "<br>");
-
+				writeDump(journal.toStruct());
 	        break;
 			default: 
 				writeOutput(form.action & " not supported on the " & form.endpoint & " endpoint");
@@ -604,45 +557,39 @@ try {
 			if(showform) {
 				writeOutput("<strong>LINKED TRANSACTIONS</strong><br>");
 			}
-			linkedtransaction=createObject("component","cfc.model.LinkedTransaction").init(); 
-
-			banktransaction = createObject("component","cfc.model.BankTransaction").init();
-			bankaccount = createObject("component","cfc.model.Account").init().getAll(where='Type=="BANK"').getObject(1);
-			salesaccount =  createObject("component","cfc.model.Account").init().getAll(where='Type=="REVENUE"').getObject(1);
-			contact = createObject("component","cfc.model.Contact").init().getAll().getObject(1);
-			lineitem=createObject("component","cfc.model.LineItem").init(); 
+			linkedtransaction=application.xero.getModel("LinkedTransaction"); 
+			banktransaction = application.xero.getModel("BankTransaction");
+			bankaccount = application.xero.getModel("Account").getAll(where='Type=="BANK"').getObject(1);
+			salesaccount =  application.xero.getModel("Account").getAll(where='Type=="REVENUE"').getObject(1);
+			contact = application.xero.getModel("Contact").getAll().getObject(1);
+			lineitem=application.xero.getModel("LineItem"); 
 			lineitem.setDescription("consulting");
 			lineitem.setQuantity("2");
 			lineitem.setUnitAmount("100");
 			lineitem.setAccountCode(salesaccount.getCode());
 			aLineItem = ArrayNew(1);
 			aLineItem.append(lineitem.toStruct());
-
 			banktransaction.setType("SPEND");
 			banktransaction.setBankAccount(bankaccount.toStruct());
 			banktransaction.setContact(contact.toStruct());
 			banktransaction.setLineitems(aLineItem);
 			banktransaction.create();
 			banktransaction.getById(banktransaction.getBanktransactionID());
-
 			switch(form.action) {
 			case "Create":
 				linkedtransaction.setSourceTransactionID(banktransaction.getBanktransactionID());
 				linkedtransaction.setSourceLineItemID(banktransaction.getLineItems()[1]["LineItemID"]);
 				linkedtransaction.create();
 				writeOutput("Create - ID: " & linkedtransaction.getLinkedTransactionID() & "<br>");
-
 	        break;
 	        case "Read":	
 				linkedtransaction.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(linkedtransaction.getList()) & "<br>");
-
 				linkedtransaction.getObject(1);
 				writeOutput("Get an Item from List -ID: " & linkedtransaction.getLinkedTransactionID() & "<br>");
-
 				linkedtransaction.getById(linkedtransaction.getLinkedTransactionID());
 				writeOutput("Get By - ID: " & linkedtransaction.getLinkedTransactionID() & "<br>");
-
+				writeDump(linkedtransaction.toStruct());
 	        break;
 	        case "Update":
 	        	// Create linked transaction ... then Update
@@ -653,17 +600,14 @@ try {
 				linkedtransaction.setContactID(contact.getContactID());
 				linkedtransaction.update();
 				writeOutput("Update - ID: " & linkedtransaction.getLinkedTransactionID() & "<br>");
-
 	        break;
 	        case "Delete":
    	        	// Create linked transaction ... then Delete
 	        	linkedtransaction.setSourceTransactionID(banktransaction.getBanktransactionID());
 				linkedtransaction.setSourceLineItemID(banktransaction.getLineItems()[1]["LineItemID"]);
 				linkedtransaction.create();
-
 				linkedtransaction.delete();
 				writeOutput("Deleted - ID: " & linkedtransaction.getLinkedTransactionID() & "<br>");
-
 			break;
 			default: 
 				writeOutput(form.action & " not supported on the " & form.endpoint & " endpoint");
@@ -674,22 +618,20 @@ try {
 			if(showform) {
 				writeOutput("<strong>MANUAL JOURNALS</strong><br>");
 			}
-			manualjournal=createObject("component","cfc.model.ManualJournal").init(); 
+			manualjournal=application.xero.getModel("ManualJournal"); 
 			
-			journalline=createObject("component","cfc.model.JournalLine").init(); 
+			journalline=application.xero.getModel("JournalLine"); 
 			aJournal = ArrayNew(1);
-
 			journalline.setLineAmount("25");
 			journalline.setAccountCode("400");
 			journalline.setDescription("Foo");
 			aJournal.append(journalline.toStruct());
 			
-			journalline2=createObject("component","cfc.model.JournalLine").init(); 
+			journalline2=application.xero.getModel("JournalLine"); 
 			journalline2.setLineAmount("-25");
 			journalline2.setAccountCode("500");
 			journalline2.setDescription("Bar");
 			aJournal.append(journalline2.toStruct());
-
 			switch(form.action) {
 			case "Create":
 				manualjournal.setLineAmountTypes("inclusive");
@@ -703,13 +645,11 @@ try {
 	        case "Read":				
 				manualjournal.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(manualjournal.getList()) & "<br>");
-
 				manualjournal.getObject(1);
 				writeOutput("Get an Item from List -ID: " & manualjournal.getManualJournalID() & "<br>");
-
 				manualjournal.getById(manualjournal.getManualJournalID());
 				writeOutput("Get By - ID: " & manualjournal.getManualJournalID() & "<br>");
-
+				writeDump(manualjournal.toStruct());
 	        break;
 	        case "Update":
 	        	// Create Manual Journal ... then Update
@@ -718,11 +658,9 @@ try {
 				manualjournal.setNarration("Hello World");
 				manualjournal.setJournalLines(aJournal);
 				manualjournal.create();
-
 				manualjournal.setNarration("Hello Mars");
 				manualjournal.update();
 				writeOutput("Update - ID: " & manualjournal.getManualJournalID() & "<br>");
-
 	        break;
 			default: 
 				writeOutput(form.action & " not supported on the " & form.endpoint & " endpoint");
@@ -733,16 +671,15 @@ try {
 			if(showform) {
 				writeOutput("<strong>ORGANISATION</strong><br>");
 			}
-			organisation=createObject("component","cfc.model.Organisation").init(); 
+			organisation=application.xero.getModel("Organisation"); 
 		
 			switch(form.action) {
 		    case "Read":
 				organisation.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(organisation.getList()) & "<br>");
-
 				organisation.getObject(1);
 				writeOutput("Get item and Name: " & organisation.getName() & "<br>");
-	
+				writeDump(organisation.toStruct());
 	        break;
 			default: 
 				writeOutput(form.action & " not supported on the " & form.endpoint & " endpoint");
@@ -753,13 +690,12 @@ try {
 			if(showform) {
 				writeOutput("<strong>OVERPAYMENTS</strong><br>");
 			}
-			overpayment=createObject("component","cfc.model.Overpayment").init(); 
-
+			overpayment=application.xero.getModel("Overpayment"); 
 			//CREATE OVERPAYMENT via BANK TRANSACTION
-			banktransaction=createObject("component","cfc.model.BankTransaction").init(); 
-			bankaccount = createObject("component","cfc.model.Account").init().getAll(where='Type=="BANK"').getObject(1);
-			contact = createObject("component","cfc.model.Contact").init().getAll().getObject(1);
-			lineitem=createObject("component","cfc.model.LineItem").init(); 
+			banktransaction=application.xero.getModel("BankTransaction"); 
+			bankaccount = application.xero.getModel("Account").getAll(where='Type=="BANK"').getObject(1);
+			contact = application.xero.getModel("Contact").getAll().getObject(1);
+			lineitem=application.xero.getModel("LineItem"); 
 			lineitem.setDescription("consulting");
 			lineitem.setUnitAmount("100");
 			lineitem.setAccountCode("120");
@@ -767,9 +703,9 @@ try {
 			aBTLineItem.append(lineitem.toStruct(exclude="ItemCode,Quantity,TaxAmount,TaxType,Tracking"));
 	
 			// Create NEW INVOICE
-			invoice=createObject("component","cfc.model.Invoice").init(); 
-			invContact = createObject("component","cfc.model.Contact").init().getAll().getObject(2);
-			lineitem=createObject("component","cfc.model.LineItem").init(); 
+			invoice=application.xero.getModel("Invoice"); 
+			invContact = application.xero.getModel("Contact").getAll().getObject(2);
+			lineitem=application.xero.getModel("LineItem"); 
 			lineitem.setDescription("consulting");
 			lineitem.setQuantity("2");
 			lineitem.setUnitAmount("100");
@@ -792,18 +728,15 @@ try {
 				banktransaction.setLineitems(aBTLineItem);
 				banktransaction.create();
 				writeOutput("Created - ID: " & banktransaction.getOverpaymentID() & "<br>");
-
 	        break;
 	        case "Read":				
 				overpayment.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(overpayment.getList()) & "<br>");
-
 				overpayment.getObject(1);
 				writeOutput("Get an Item from List -ID: " & overpayment.getOverpaymentID() & "<br>");
-
 				overpayment.getById(overpayment.getOverpaymentID());
 				writeOutput("Get By - ID: " & overpayment.getOverpaymentID() & "<br>");
-
+				writeDump(overpayment.toStruct());
 	        break;
 	        case "Allocate":
 		        // Create Overpayment (Bank Transaction) ... then Allocate
@@ -812,7 +745,6 @@ try {
 				banktransaction.setContact(contact.toStruct());
 				banktransaction.setLineitems(aBTLineItem);
 				banktransaction.create();
-
 				overpayment.setDate("2018-2-1");
 				overpayment.setAmount("10");
 				overpayment.setInvoice(invoice.toStruct(Only="id"));
@@ -820,7 +752,6 @@ try {
 				
 				overpayment.allocate();
 				writeOutput("Allocate - ID: " & banktransaction.getOverpaymentID() & "<br>");
-
 	        break;
 			default: 
 				writeOutput(form.action & " not supported on the " & form.endpoint & " endpoint");
@@ -831,11 +762,10 @@ try {
 			if(showform) {
 				writeOutput("<strong>PAYMENTS</strong><br>");
 			}
-			payment=createObject("component","cfc.model.Payment").init(); 
-
-			invoice=createObject("component","cfc.model.Invoice").init(); 
-			contact = createObject("component","cfc.model.Contact").init().getAll().getObject(1);
-			lineitem=createObject("component","cfc.model.LineItem").init(); 
+			payment=application.xero.getModel("Payment"); 
+			invoice=application.xero.getModel("Invoice"); 
+			contact = application.xero.getModel("Contact").getAll().getObject(1);
+			lineitem=application.xero.getModel("LineItem"); 
 			lineitem.setDescription("consulting");
 			lineitem.setQuantity("2");
 			lineitem.setUnitAmount("100");
@@ -849,9 +779,7 @@ try {
 			invoice.setStatus("AUTHORISED");
 			invoice.setDueDate("2018-5-5");
 			invoice.create();
-
-			bankaccount = createObject("component","cfc.model.Account").init().getAll(where='Type=="BANK"').getObject(1);
-
+			bankaccount = application.xero.getModel("Account").getAll(where='Type=="BANK"').getObject(1);
 			switch(form.action) {
 			case "Create":
 				payment.setDate("2018-2-1");
@@ -865,13 +793,12 @@ try {
 	        case "Read":				
 				payment.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(payment.getList()) & "<br>");
-
 				payment.getObject(2);
 				writeOutput("Get an Item from List -ID: " & payment.getPaymentID() & "<br>");
 						
 				payment.getById(payment.getPaymentID());
 				writeOutput("Get By - ID: " & payment.getPaymentID() & "<br>");
-
+				writeDump(payment.toStruct());
 	        break;
    			case "Delete":
 				// Create a Payment ... then Delete
@@ -880,10 +807,8 @@ try {
 				payment.setAccount(bankaccount.toStruct(Only="id"));
 				payment.setInvoice(invoice.toStruct(Only="id"));
 				payment.create();
-
 	        	payment.delete();
 				writeOutput("delete - ID: " & payment.getPaymentID() & "<br>");	
-
 	        break;
 	 
 			default: 
@@ -895,25 +820,23 @@ try {
 			if(showform) {
 				writeOutput("<strong>PREPAYMENTS</strong><br>");
 			}
-			prepayment=createObject("component","cfc.model.Prepayment").init(); 
-
+			prepayment=application.xero.getModel("Prepayment"); 
 			//CREATE OVERPAYMENT via BANK TRANSACTION
-			banktransaction=createObject("component","cfc.model.BankTransaction").init(); 
-			bankaccount = createObject("component","cfc.model.Account").init().getAll(where='Type=="BANK"').getObject(1);
-			contact = createObject("component","cfc.model.Contact").init().getAll().getObject(1);
-			lineitem=createObject("component","cfc.model.LineItem").init(); 
+			banktransaction=application.xero.getModel("BankTransaction"); 
+			bankaccount = application.xero.getModel("Account").getAll(where='Type=="BANK"').getObject(1);
+			contact = application.xero.getModel("Contact").getAll().getObject(1);
+			lineitem=application.xero.getModel("LineItem"); 
 			lineitem.setDescription("consulting");
 			lineitem.setUnitAmount("100");
 			lineitem.setQuantity("100");
 			lineitem.setAccountCode("500");
 			aBTLineItem = ArrayNew(1);
 			aBTLineItem.append(lineitem.toStruct(exclude="ItemCode,TaxAmount,TaxType,Tracking"));
-
 			// Create NEW INVOICE
-			invoice=createObject("component","cfc.model.Invoice").init(); 
-			contact = createObject("component","cfc.model.Contact").init().getAll().getObject(2);
+			invoice=application.xero.getModel("Invoice"); 
+			contact = application.xero.getModel("Contact").getAll().getObject(2);
 			
-			lineitem=createObject("component","cfc.model.LineItem").init(); 
+			lineitem=application.xero.getModel("LineItem"); 
 			lineitem.setDescription("consulting");
 			lineitem.setQuantity("2");
 			lineitem.setUnitAmount("100");
@@ -936,18 +859,15 @@ try {
 				banktransaction.setLineitems(aBTLineItem);
 				banktransaction.create();
 				writeOutput("Create - ID: " & banktransaction.getBanktransactionID() & "<br>");	        	
-
 	        break;
 	        case "Read":
 	        	prepayment.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(prepayment.getList()) & "<br>");
-
 				prepayment.getObject(1);
 				writeOutput("Get an Item from List -ID: " & prepayment.getPrepaymentID() & "<br>");								
-
 				prepayment.getById(prepayment.getPrepaymentID());
 				writeOutput("Get By - ID: " & prepayment.getPrepaymentID() & "<br>");
-
+				writeDump(prepayment.toStruct());
 	        break;
 	        case "Allocate":
 	        	//Create BankTransaction(Prepayment)... then Allocate to an Invoice
@@ -956,7 +876,6 @@ try {
 				banktransaction.setContact(contact.toStruct());
 				banktransaction.setLineitems(aBTLineItem);
 				banktransaction.create();
-
 		    	prepayment.setDate("2018-2-1");
 				prepayment.setAmount("10");
 				prepayment.setInvoice(invoice.toStruct(Only="id"));
@@ -974,18 +893,16 @@ try {
 			if(showform) {
 				writeOutput("<strong>PURCHASE ORDERS</strong><br>");
 			}
-			purchaseorder=createObject("component","cfc.model.Purchaseorder").init(); 
-
+			purchaseorder=application.xero.getModel("Purchaseorder"); 
 			// Create
-			contact = createObject("component","cfc.model.Contact").init().getAll().getObject(1);
-			lineitem=createObject("component","cfc.model.LineItem").init(); 
+			contact = application.xero.getModel("Contact").getAll().getObject(1);
+			lineitem=application.xero.getModel("LineItem"); 
 			lineitem.setDescription("consulting");
 			lineitem.setQuantity("2");
 			lineitem.setUnitAmount("100");
 			lineitem.setAccountCode("400");
 			aLineItem = ArrayNew(1);
 			aLineItem.append(lineitem.toStruct());
-
 			switch(form.action) {
 			case "Create":
 				purchaseorder.setLineitems(aLineItem);
@@ -999,13 +916,11 @@ try {
 	        case "Read":					
 				purchaseorder.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(purchaseorder.getList()) & "<br>");
-
 				purchaseorder.getObject(1);
 				writeOutput("Get an Purchaseorder from List -ID: " & purchaseorder.getPurchaseorderID() & "<br>");
-
 				purchaseorder.getById(purchaseorder.getPurchaseorderID());
 				writeOutput("Get By - ID: " & purchaseorder.getPurchaseorderID() & "<br>");
-
+				writeDump(purchaseorder.toStruct());
 	        break;
 	        case "Update":
 	        	// Create a PurchaseOrder ... then Update
@@ -1013,7 +928,6 @@ try {
 				purchaseorder.setContact(contact.toStruct());
 				purchaseorder.setAttentionTo("Daffy Duck");
 				purchaseorder.create();
-
 				purchaseorder.setStatus("AUTHORISED");
 				purchaseorder.setSentToContact("YES");
 				purchaseorder.update();
@@ -1029,19 +943,18 @@ try {
 			if(showform) {
 				writeOutput("<strong>REPEATING INVOICES</strong><br>");
 			}
-			repeatinginvoice=createObject("component","cfc.model.RepeatingInvoice").init(); 
+			repeatinginvoice=application.xero.getModel("RepeatingInvoice"); 
 	
 			switch(form.action) {
 	        case "Read":				
 				repeatinginvoice.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(repeatinginvoice.getList()) & "<br>");
-
 				repeatinginvoice.getObject(1);
 				writeOutput("Get an item from List -ID: " & repeatinginvoice.getRepeatingInvoiceID() & "<br>");
 	
 				repeatinginvoice.getById(repeatinginvoice.getRepeatingInvoiceID());
 				writeOutput("Get By ID: " & repeatinginvoice.getRepeatingInvoiceID() & "<br>");
-							
+				writeDump(repeatinginvoice.toStruct());
 	        break;
 	        
 			default: 
@@ -1053,43 +966,34 @@ try {
 			if(showform) {
 				writeOutput("<strong>REPORTS</strong><br>");
 			}
-			report=createObject("component","cfc.model.Report").init(); 
-			contact=createObject("component","cfc.model.Contact").init().getAll().getObject(1); 
-			bankaccount = createObject("component","cfc.model.Account").init().getAll(where='Type=="BANK"').getObject(1);
+			report=application.xero.getModel("Report"); 
+			contact=application.xero.getModel("Contact").getAll().getObject(1); 
+			bankaccount = application.xero.getModel("Account").getAll(where='Type=="BANK"').getObject(1);
 			
 	
 			switch(form.action) {
 	        case "Read":				
 				report.getById("TenNinetyNine");
 				writeOutput("Get Report: " & report.getReportName() & "<br>");
-
 				report.getById(id="AgedPayablesByContact",ContactID=contact.getContactID());
 				writeOutput("Get Report: " & report.getReportID() & "<br>");
-
 				report.getById(id="AgedReceivablesByContact",ContactID=contact.getContactID());
 				writeOutput("Get Report: " & report.getReportID() & "<br>");
-
 				report.getById(id="BalanceSheet",periods="3",timeframe="month");
 				writeOutput("Get Report: " & report.getReportID() & "<br>");
-
 				report.getById(id="BankStatement",bankAccountID=bankaccount.getAccountID());
 				writeOutput("Get Report: " & report.getReportID() & "<br>");
-
 				report.getById(id="BankSummary",toDate="2017-03-01",fromDate="2017-01-01");
 				writeOutput("Get Report: " & report.getReportID() & "<br>");
-
 				report.getById(id="BudgetSummary");
 				writeOutput("Get Report: " & report.getReportID() & "<br>");
-
 				report.getById(id="ExecutiveSummary");
 				writeOutput("Get Report: " & report.getReportID() & "<br>");
-
 				report.getById("ProfitAndLoss");
 				writeOutput("Get Report: " & report.getReportID() & "<br>");
-
 				report.getById("TrialBalance");
 				writeOutput("Get Report: " & report.getReportID() & "<br>");
-							
+				writeDump(report.toStruct());
 	        break;
 			default: 
 				writeOutput(form.action & " not supported on the " & form.endpoint & " endpoint");
@@ -1100,15 +1004,13 @@ try {
 			if(showform) {
 				writeOutput("<strong>TAX RATES</strong><br>");
 			}
-			taxrate=createObject("component","cfc.model.TaxRate").init(); 
-
+			taxrate=application.xero.getModel("TaxRate"); 
 			// Create
-			taxcomponent=createObject("component","cfc.model.TaxComponent").init(); 
+			taxcomponent=application.xero.getModel("TaxComponent"); 
 			taxcomponent.setName("Foobar" &RandRange(1, 10000, "SHA1PRNG"));
 			taxcomponent.setRate("6");
 			aTaxComponent = ArrayNew(1);
 			aTaxComponent.append(taxcomponent.toStruct());
-
 			switch(form.action) {
 			case "Create":
 				taxrate.setName("My New Tax " &RandRange(1, 10000, "SHA1PRNG"));
@@ -1116,15 +1018,13 @@ try {
 				taxrate.setTaxComponents(aTaxComponent);
 				taxrate.create();
 				writeOutput("Create - ID: " & taxrate.getName() & "<br>");
-
 	        break;
 	        case "Read":
 				taxrate.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(taxrate.getList()) & "<br>");
-
 				taxrate.getObject(1);
-				writeOutput("Get an Taxrate from List -ID: " & taxrate.getName() & "<br>");			
-
+				writeOutput("Get an Taxrate from List -ID: " & taxrate.getName() & "<br>");	
+				writeDump(taxrate.toStruct());		
 	        break;
 	        case "Update":
 		        // Create a tax rate ... then update
@@ -1135,7 +1035,6 @@ try {
 		    	taxrate.setName("My New One" &RandRange(1, 10000, "SHA1PRNG"));
 				taxrate.update();
 				writeOutput("Update - ID: " & taxrate.getName() & "<br>");
-
 	        break;
 	        case "Delete":
 		        // Create a tax rate ... then delete
@@ -1143,10 +1042,8 @@ try {
 				taxrate.setTaxType("TAX"&RandRange(1, 1000, "SHA1PRNG"));
 				taxrate.setTaxComponents(aTaxComponent);
 				taxrate.create();
-
 				taxrate.delete();
 				writeOutput("Deleted - ID: " & taxrate.getName() & "<br>");
-
 			break;
 			default: 
 				writeOutput(form.action & " not supported on the " & form.endpoint & " endpoint");
@@ -1157,9 +1054,7 @@ try {
 			if(showform) {
 				writeOutput("<strong>TRACKING CATEGORIES</strong><br>");
 			}
-
-			trackingcategory=createObject("component","cfc.model.TrackingCategory").init(); 	
-
+			trackingcategory=application.xero.getModel("TrackingCategory"); 	
 			switch(form.action) {
 			case "Create":
 				trackingcategory.setName("My New Category " &RandRange(1, 10000, "SHA1PRNG"));
@@ -1170,13 +1065,12 @@ try {
 	        case "Read":
 				trackingcategory.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(trackingcategory.getList()) & "<br>");
-
 				if (ArrayLen(trackingcategory.getList()) GT 0){ 	
 					trackingcategory.getObject(1);
 					writeOutput("Get an Object List -ID: " & trackingcategory.getTrackingCategoryID() & "<br>");
-
 					trackingcategory.getById(trackingcategory.getTrackingCategoryID());
-					writeOutput("Get by ID: " & trackingcategory.getTrackingCategoryID() & "<br>");	
+					writeOutput("Get by ID: " & trackingcategory.getTrackingCategoryID() & "<br>");
+					writeDump(trackingcategory.toStruct());
 				}
 	        break;
 	        case "Update":
@@ -1214,7 +1108,7 @@ try {
 				trackingcategory.getAll();    	
 		    	if (ArrayLen(trackingcategory.getList()) GT 0){ 
 			    	trackingcategory.getObject(1);	
-					trackingoptionToDelete=createObject("component","cfc.model.TrackingOption").init().populate(trackingcategory.getOptions()[1]); 	
+					trackingoptionToDelete=application.xero.getModel("TrackingOption").populate(trackingcategory.getOptions()[1]); 	
 					trackingcategory.setOptionId(trackingoptionToDelete.getTrackingOptionId());	
 					trackingcategory.deleteOption();
 					writeOutput("Remove Options: " & trackingcategory.getTrackingCategoryId() & "<br>");
@@ -1226,13 +1120,12 @@ try {
 		        trackingcategory.getAll();
 	        	if (ArrayLen(trackingcategory.getList()) GT 0){ 	
 					trackingcategory.getObject(1);
-			        trackingoption=createObject("component","cfc.model.TrackingOption").init(); 
+			        trackingoption=application.xero.getModel("TrackingOption"); 
 					trackingoption.setName("Foobar" &RandRange(1, 10000, "SHA1PRNG"));
 					trackingoption.setTrackingCategoryId(trackingcategory.getTrackingCategoryID());
 					trackingoption.setStatus("ACTIVE");
 					aTrackingOption = ArrayNew(1);
 					aTrackingOption.append(trackingoption.toStruct());
-
 					trackingcategory.setOptions(aTrackingOption);
 					trackingcategory.addOptions();
 					writeOutput("Options Added - ID: " & trackingcategory.getTrackingCategoryId() & "<br>");
@@ -1250,21 +1143,17 @@ try {
 			if(showform) {
 				writeOutput("<strong>USERS</strong><br>");
 			}
-
-			user=createObject("component","cfc.model.User").init(); 
-
+			user=application.xero.getModel("User"); 
 			switch(form.action) {
 	
 	        case "Read":
 				user.getAll();
 				writeOutput("Get ALL - count: " & ArrayLen(user.getList()) & "<br>");
-
 				user.getObject(1);
 				writeOutput("Get an Object List -ID: " & user.getUserId() & "<br>");
-
 				user.getById(user.getUserId());
-				writeOutput("Get by ID: " & user.getUserId() & "<br>");				
-
+				writeOutput("Get by ID: " & user.getUserId() & "<br>");
+				writeDump(user.toStruct());	
 	        break;
 			default: 
 				writeOutput(form.action & " not supported on the " & form.endpoint & " endpoint");
@@ -1276,23 +1165,19 @@ try {
 		break;
 	}
 }	
-
 catch(ValidationException e){
 	error = deserializeJSON(e.Detail);
 	writeOutput(e.errorCode & " - " & e.Message & " - " & error[1].Message);
 }
-
 catch(Application e){
 	if(e.errorCode EQ "401") {
-		location("index.cfm?error=#e.Message#", "false");
+		location("indeapplication.xero.cfm?error=#e.Message#", "false");
 	}
 	writeOutput(e.errorCode & " - " & e.Message);
 }
-
 catch(any e){
 	writeDump(e);
 }
-
 </cfscript>
 
 </div>

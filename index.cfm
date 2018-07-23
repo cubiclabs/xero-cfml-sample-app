@@ -1,7 +1,7 @@
 <html>
 <head>
 	<title>Xero-CFML Sample App</title>
-	<cfinclude template="/common/header.cfm" >
+	<cfinclude template="common/header.cfm" >
 </head>
 <body>
 <div class="container">
