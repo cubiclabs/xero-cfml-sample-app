@@ -1,6 +1,6 @@
 {
     "name":"Xero CFML Sample App",
-    "version":"0.1.1",
+    "version":"0.1.2",
     "author":"",
     "location":"https://github.com/XeroAPI/xero-cfml-sample-app/archive/master.zip",
     "homepage":"",
@@ -27,7 +27,7 @@
     ],
     "contributors":[],
     "dependencies":{
-         "xero-cfml":"^0.5.0"
+         "xero-cfml":"^0.5.3"
     },
     "devDependencies":{},
     "installPaths":{
