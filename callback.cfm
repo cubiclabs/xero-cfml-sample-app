@@ -12,7 +12,6 @@
 
 <cfscript>
 
-
 try {
 	application.xero.accessToken(aCallbackParams = cgi.query_string);
 	location("get.cfm","false");
@@ -26,6 +25,7 @@ catch(any e){
 		abort;
 	}
 }
+
 </cfscript>
 </div>
 </body>
