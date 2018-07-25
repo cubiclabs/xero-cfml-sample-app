@@ -263,7 +263,6 @@ Remove from an object on an endpoint
 If you find yourself limited by the models, you can always hack your own raw API call.
 
 ```java
-  <cfset config = application.config.json>
   <cfset parameters = structNew()>
   <cfset body = "">
   <cfset ifModifiedSince = "">
@@ -271,7 +270,7 @@ If you find yourself limited by the models, you can always hack your own raw API
   <cfset accept = "json/application">
   <cfset endpoint = "Organisation">
 
-  <cfset sResourceEndpoint = "#config.ApiBaseUrl##config.ApiEndpointPath##endpoint#">
+  <cfset sResourceEndpoint = "#application.xero.config.ApiBaseUrl##application.xero.config.ApiEndpointPath##endpoint#">
   
   <!--- Build and Call API, return new structure of XML results --->
   <cfset oRequestResult = application.xero.requestData(
